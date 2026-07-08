@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#FEF7FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ICAN Inventory">
+    <link rel="apple-touch-icon" href="https://icanskill.com/_ipx/_/img/logo/ican.svg">
+    <link rel="manifest" id="manifest-link">
+
     <title>ICAN Inventory Manager</title>
     
     <!-- Tailwind CSS -->
@@ -70,6 +79,20 @@
         .md-toggle::after { content: ''; position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; background: var(--md-sys-color-outline); border-radius: 50%; transition: all 0.2s ease; }
         .md-toggle:checked { background: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); }
         .md-toggle:checked::after { transform: translateX(20px); background: var(--md-sys-color-on-primary); width: 24px; height: 24px; top: 2px; left: 2px; }
+
+        /* Magnetic Flip Clock Animation */
+        .qty-wrapper {
+            perspective: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            overflow: visible;
+        }
+        .qty-text {
+            display: inline-block;
+            transform-style: preserve-3d;
+        }
     </style>
 </head>
 <body class="pb-24">
@@ -325,10 +348,27 @@ function doPost(e) {
     <script>
         /**
          * ==========================================
+         * 🚀 PWA INITIALIZATION (Native App Feel)
+         * ==========================================
+         */
+        // Generate dynamic manifest for single-file PWA
+        const manifest = {
+            name: "ICAN School Inventory",
+            short_name: "Inventory",
+            start_url: ".",
+            display: "standalone",
+            background_color: "#FEF7FF",
+            theme_color: "#6750A4",
+            icons: [{ src: "https://icanskill.com/_ipx/_/img/logo/ican.svg", sizes: "192x192", type: "image/svg+xml" }]
+        };
+        document.getElementById('manifest-link').setAttribute('href', 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest)));
+
+        /**
+         * ==========================================
          * ⚙️ CONFIGURATION & STATE
          * ==========================================
          */
-        let APPS_SCRIPT_URL = localStorage.getItem('userAppsScriptUrl') || ""; 
+        let APPS_SCRIPT_URL = localStorage.getItem('userAppsScriptUrl') || "https://script.google.com/macros/s/AKfycbxrPY-b1tK2nDTLtZHDVS3GXP2LaoLWJR6zIURBb2ckjtXAZASAGJ9MvhFoSfmErZ9Z/exec"; 
         let isAutoSyncEnabled = localStorage.getItem('autoSyncEnabled') === 'true';
         let autoSyncInterval = null;
         let isSyncing = false;
@@ -526,7 +566,9 @@ function doPost(e) {
 
             // Optimistic update
             inventory[index].quantity = newQty;
-            renderList(searchInput.value); 
+            
+            // 🔥 Trigger Magnetic Flip-Clock Animation instead of full re-render
+            animateQuantityUI(id, newQty, amount);
 
             try {
                 if (APPS_SCRIPT_URL) {
@@ -540,10 +582,52 @@ function doPost(e) {
                 }
             } catch (error) {
                 console.error("Update error:", error);
+                // Revert on failure
                 inventory[index].quantity = oldQty;
-                renderList(searchInput.value);
+                animateQuantityUI(id, oldQty, -amount); 
                 showToast('Failed to sync update', 'error');
             }
+        }
+
+        /**
+         * 🪄 Magnetic Flip-Clock Animation Logic
+         */
+        function animateQuantityUI(id, newQty, direction) {
+            const qtyEl = document.getElementById(`qty-${id}`);
+            if (!qtyEl) return;
+            
+            // Disable buttons briefly to prevent spam-clicking from breaking the physics
+            const parent = qtyEl.closest('.flex');
+            const btns = parent.querySelectorAll('button');
+            btns.forEach(b => b.style.pointerEvents = 'none');
+
+            // 1. Snap out (Rotate back into the screen)
+            qtyEl.style.transition = 'transform 0.15s ease-in, opacity 0.15s ease-in';
+            qtyEl.style.transform = `rotateX(${direction > 0 ? 90 : -90}deg)`;
+            qtyEl.style.opacity = '0';
+            
+            setTimeout(() => {
+                // 2. Update the number while it is invisible
+                qtyEl.textContent = newQty;
+                
+                // 3. Teleport to the opposite side instantly (No transition)
+                qtyEl.style.transition = 'none';
+                qtyEl.style.transform = `rotateX(${direction > 0 ? -90 : 90}deg)`;
+                
+                // Force the browser to register the teleportation before animating
+                void qtyEl.offsetWidth;
+                
+                // 4. Springy magnetic snap into place
+                // The cubic-bezier curve provides the satisfying mechanical "bounce"
+                qtyEl.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease-out';
+                qtyEl.style.transform = 'rotateX(0deg)';
+                qtyEl.style.opacity = '1';
+                
+                // Re-enable buttons
+                setTimeout(() => {
+                    btns.forEach(b => b.style.pointerEvents = 'auto');
+                }, 300);
+            }, 150);
         }
 
         async function deleteItem(id) {
@@ -624,7 +708,9 @@ function doPost(e) {
                                     ${item.quantity <= 0 ? 'disabled' : ''}>
                                 <span class="material-symbols-rounded icon-outlined">remove</span>
                             </button>
-                            <span class="font-medium text-[16px] w-8 text-center text-[#1D192B]">${item.quantity}</span>
+                            <div class="qty-wrapper">
+                                <span id="qty-${item.id}" class="qty-text font-medium text-[16px] text-center text-[#1D192B]">${item.quantity}</span>
+                            </div>
                             <button onclick="changeQuantity('${item.id}', 1)" 
                                     class="w-10 h-10 rounded-full bg-[#EADDFF] text-[#21005D] flex items-center justify-center hover:bg-[#D0BCFF] active:scale-95 transition-all">
                                 <span class="material-symbols-rounded icon-outlined">add</span>

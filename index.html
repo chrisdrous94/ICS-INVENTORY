@@ -95,10 +95,23 @@
             </div>
         </div>
 
+        <!-- Category Tabs -->
+        <div class="px-4">
+            <div id="categoryTabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
         <section class="px-4 pb-10">
-            <div class="flex justify-between items-end mb-3 px-2">
-                <h2 class="text-[14px] font-medium text-[#49454F]" data-i18n="currentStock">Current Stock</h2>
-                <span id="totalItems" class="text-[14px] text-[#49454F]">0 Items</span>
+            <div class="flex justify-between items-center mb-3 px-2 gap-2">
+                <h2 id="activeCategoryLabel" class="text-[16px] font-medium text-[#1D192B] truncate">—</h2>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="lowStockFilter" onclick="toggleLowOnly()" class="hidden items-center gap-1 pl-2 pr-3 py-1 rounded-full bg-[#FFDAD6] text-[#410002] text-[13px] font-medium active:scale-95 transition-all">
+                        <span class="material-symbols-rounded text-[16px]">warning</span>
+                        <span id="lowStockCount">0</span>
+                    </button>
+                    <span id="totalItems" class="text-[14px] text-[#49454F]">0</span>
+                </div>
             </div>
             
             <div id="inventoryList" class="space-y-3">
@@ -148,6 +161,10 @@
                     <input type="number" id="itemQuantity" required min="0" value="1" placeholder=" " class="peer w-full h-14 px-4 bg-transparent border border-[#79747E] rounded-[4px] outline-none focus:border-2 focus:border-[#6750A4] text-[#1D192B]">
                     <label class="absolute left-3 top-[-8px] bg-[#FEF7FF] px-1 text-[12px] text-[#6750A4] peer-placeholder-shown:text-[#49454F] peer-placeholder-shown:text-[16px] peer-placeholder-shown:top-4 peer-focus:top-[-8px] peer-focus:text-[12px] peer-focus:text-[#6750A4] transition-all pointer-events-none" data-i18n="qty">Quantity</label>
                 </div>
+                <div class="relative">
+                    <input type="number" id="itemThreshold" min="0" value="0" placeholder=" " class="peer w-full h-14 px-4 bg-transparent border border-[#79747E] rounded-[4px] outline-none focus:border-2 focus:border-[#6750A4] text-[#1D192B]">
+                    <label class="absolute left-3 top-[-8px] bg-[#FEF7FF] px-1 text-[12px] text-[#6750A4] peer-placeholder-shown:text-[#49454F] peer-placeholder-shown:text-[16px] peer-placeholder-shown:top-4 peer-focus:top-[-8px] peer-focus:text-[12px] peer-focus:text-[#6750A4] transition-all pointer-events-none" data-i18n="threshold">Reorder at (low-stock level)</label>
+                </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeModal('addItemModal')" class="px-6 py-2.5 rounded-full text-[#6750A4] font-medium hover:bg-[#6750A4]/10 transition-colors" data-i18n="cancel">Cancel</button>
                     <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6750A4] text-white font-medium hover:bg-[#523f85] transition-colors" data-i18n="save">Save</button>
@@ -175,6 +192,10 @@
                 <div class="relative">
                     <input type="text" id="editItemLocation" required placeholder=" " class="peer w-full h-14 px-4 bg-transparent border border-[#79747E] rounded-[4px] outline-none focus:border-2 focus:border-[#6750A4] text-[#1D192B]">
                     <label class="absolute left-3 top-[-8px] bg-[#FEF7FF] px-1 text-[12px] text-[#6750A4] peer-placeholder-shown:text-[#49454F] peer-placeholder-shown:text-[16px] peer-placeholder-shown:top-4 peer-focus:top-[-8px] peer-focus:text-[12px] peer-focus:text-[#6750A4] transition-all pointer-events-none" data-i18n="location">Location</label>
+                </div>
+                <div class="relative">
+                    <input type="number" id="editItemThreshold" min="0" value="0" placeholder=" " class="peer w-full h-14 px-4 bg-transparent border border-[#79747E] rounded-[4px] outline-none focus:border-2 focus:border-[#6750A4] text-[#1D192B]">
+                    <label class="absolute left-3 top-[-8px] bg-[#FEF7FF] px-1 text-[12px] text-[#6750A4] peer-placeholder-shown:text-[#49454F] peer-placeholder-shown:text-[16px] peer-placeholder-shown:top-4 peer-focus:top-[-8px] peer-focus:text-[12px] peer-focus:text-[#6750A4] transition-all pointer-events-none" data-i18n="threshold">Reorder at (low-stock level)</label>
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeModal('editItemModal')" class="px-6 py-2.5 rounded-full text-[#6750A4] font-medium hover:bg-[#6750A4]/10 transition-colors" data-i18n="cancel">Cancel</button>
@@ -236,6 +257,20 @@
 
                 <hr class="border-[#CAC4D0]">
 
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-[14px] font-medium text-[#6750A4]" data-i18n="manageCategories">Manage Categories</h3>
+                        <button onclick="addCategory()" class="flex items-center gap-1 px-3 py-1 rounded-full text-[#6750A4] font-medium hover:bg-[#6750A4]/10 transition-colors">
+                            <span class="material-symbols-rounded text-[18px]">add</span> <span data-i18n="addCategory">Add category</span>
+                        </button>
+                    </div>
+                    <div id="categoryManageList" class="space-y-2">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <hr class="border-[#CAC4D0]">
+
                 <div class="space-y-4">
                     <h3 class="text-[14px] font-medium text-[#6750A4]" data-i18n="dbConnection">Database Connection</h3>
                     <div class="relative">
@@ -262,59 +297,87 @@
                     </div>
                     <div class="bg-[#1D192B] text-[#D0BCFF] p-4 rounded-[12px] text-xs font-mono overflow-x-auto shadow-inner">
 <pre id="appsScriptCode">
-const SHEET_NAME = 'Inventory';
+// Each inventory type is its own sheet tab.
+// Columns per tab: ID | Type | Location | Quantity | Threshold
+const HEADERS = ['ID', 'Type', 'Location', 'Quantity', 'Threshold'];
 
-function getSheet() {
-  let ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-    sheet.appendRow(['ID', 'Type', 'Location', 'Quantity']);
-  }
+function getSheet(name) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) { sheet = ss.insertSheet(name); sheet.appendRow(HEADERS); }
+  else if (sheet.getLastRow() === 0) { sheet.appendRow(HEADERS); }
   return sheet;
 }
 
+function listCategories() {
+  return SpreadsheetApp.getActiveSpreadsheet().getSheets()
+    .map(function (s) { return s.getName(); })
+    .filter(function (n) { return n.charAt(0) !== '_'; });
+}
+
+function json(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doGet(e) {
-  const sheet = getSheet();
-  const data = sheet.getDataRange().getValues();
-  const result = [];
+  const action = (e.parameter.action || 'get');
+  if (action === 'categories') return json(listCategories());
+  const category = e.parameter.category;
+  if (!category) return json([]);
+  const data = getSheet(category).getDataRange().getValues();
+  const out = [];
   for (let i = 1; i < data.length; i++) {
-    result.push({ id: data[i][0].toString(), type: data[i][1], location: data[i][2], quantity: parseInt(data[i][3]) });
+    if (data[i][0] === '' && data[i][1] === '') continue;
+    out.push({
+      id: data[i][0].toString(), type: data[i][1], location: data[i][2],
+      quantity: parseInt(data[i][3]) || 0, threshold: parseInt(data[i][4]) || 0
+    });
   }
-  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  return json(out);
 }
 
 function doPost(e) {
-  if (!e || !e.postData || !e.postData.contents) return ContentService.createTextOutput(JSON.stringify({error: "No data"})).setMimeType(ContentService.MimeType.JSON);
+  if (!e || !e.postData || !e.postData.contents) return json({ error: 'No data' });
+  const p = JSON.parse(e.postData.contents);
+  const a = p.action;
 
-  const sheet = getSheet();
-  const payload = JSON.parse(e.postData.contents);
+  if (a === 'addCategory') { getSheet(p.category); return json({ ok: true, categories: listCategories() }); }
+  if (a === 'renameCategory') {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(p.category);
+    if (sh) sh.setName(p.newName);
+    return json({ ok: true, categories: listCategories() });
+  }
+  if (a === 'deleteCategory') {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sh = ss.getSheetByName(p.category);
+    if (sh && ss.getSheets().length > 1) ss.deleteSheet(sh);
+    return json({ ok: true, categories: listCategories() });
+  }
+
+  const sheet = getSheet(p.category);
   const data = sheet.getDataRange().getValues();
-  
-  if (payload.action === 'add') {
-    sheet.appendRow([payload.item.id, payload.item.type, payload.item.location, payload.item.quantity]);
-  } else if (payload.action === 'update') {
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0].toString() === payload.id.toString()) {
-        sheet.getRange(i + 1, 4).setValue(payload.quantity); break;
-      }
-    }
-  } else if (payload.action === 'edit') {
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0].toString() === payload.item.id.toString()) {
-        sheet.getRange(i + 1, 2).setValue(payload.item.type);
-        sheet.getRange(i + 1, 3).setValue(payload.item.location);
+
+  if (a === 'add') {
+    const it = p.item;
+    sheet.appendRow([it.id, it.type, it.location, it.quantity, it.threshold || 0]);
+  } else if (a === 'update') {
+    for (let i = 1; i < data.length; i++)
+      if (data[i][0].toString() === p.id.toString()) { sheet.getRange(i + 1, 4).setValue(p.quantity); break; }
+  } else if (a === 'edit') {
+    const it = p.item;
+    for (let i = 1; i < data.length; i++)
+      if (data[i][0].toString() === it.id.toString()) {
+        sheet.getRange(i + 1, 2).setValue(it.type);
+        sheet.getRange(i + 1, 3).setValue(it.location);
+        sheet.getRange(i + 1, 5).setValue(it.threshold || 0);
         break;
       }
-    }
-  } else if (payload.action === 'delete') {
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0].toString() === payload.id.toString()) {
-        sheet.deleteRow(i + 1); break;
-      }
-    }
+  } else if (a === 'delete') {
+    for (let i = 1; i < data.length; i++)
+      if (data[i][0].toString() === p.id.toString()) { sheet.deleteRow(i + 1); break; }
   }
-  return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
+  return json({ ok: true });
 }
 </pre>
                     </div>
@@ -348,6 +411,11 @@ function doPost(e) {
         let autoSyncInterval = null;
         let isSyncing = false;
         let inventory = [];
+
+        // Category state
+        let categories = [];
+        let activeCategory = localStorage.getItem('activeCategory') || '';
+        let showLowOnly = false;
         
         // Lazy Load State
         let displayLimit = 50;
@@ -361,7 +429,14 @@ function doPost(e) {
                 cancel: "Cancel", save: "Save", editTitle: "Edit Details", auditModeTitle: "Audit Room",
                 settings: "Settings", language: "Language", dbConnection: "Database Connection", 
                 autoSync: "Auto Sync", autoSyncDesc: "Sync data every 15 seconds", gasCode: "Apps Script Setup Code",
-                copy: "Copy", saveConfig: "Save Configuration", searchPh: "Search items or locations"
+                copy: "Copy", saveConfig: "Save Configuration", searchPh: "Search items or locations",
+                threshold: "Reorder at (low-stock level)", low: "Low", manageCategories: "Manage Categories",
+                addCategory: "Add category", renameCat: "Rename", deleteCat: "Delete",
+                newCatPrompt: "Name for the new inventory type (e.g. Cleaning Materials):",
+                renameCatPrompt: "New name for this category:",
+                confirmDeleteCat: "Delete this category and all its items? This cannot be undone.",
+                noCategories: "No inventory types yet.", createFirstCat: "Create your first type",
+                catExists: "That category already exists.", lastCat: "You can't delete the only category."
             },
             ru: {
                 title: "Инвентарь", currentStock: "Текущий запас", noItems: "Товары не найдены.",
@@ -369,7 +444,14 @@ function doPost(e) {
                 cancel: "Отмена", save: "Сохранить", editTitle: "Редактировать", auditModeTitle: "Аудит Комнаты",
                 settings: "Настройки", language: "Язык", dbConnection: "Подключение к БД", 
                 autoSync: "Авто Синх.", autoSyncDesc: "Синхронизация каждые 15 сек", gasCode: "Код Apps Script",
-                copy: "Копировать", saveConfig: "Сохранить настройки", searchPh: "Поиск товаров или локаций"
+                copy: "Копировать", saveConfig: "Сохранить настройки", searchPh: "Поиск товаров или локаций",
+                threshold: "Дозаказ при остатке", low: "Мало", manageCategories: "Категории",
+                addCategory: "Добавить категорию", renameCat: "Переименовать", deleteCat: "Удалить",
+                newCatPrompt: "Название нового типа инвентаря (напр. Чистящие средства):",
+                renameCatPrompt: "Новое название категории:",
+                confirmDeleteCat: "Удалить категорию и все её товары? Это нельзя отменить.",
+                noCategories: "Пока нет типов инвентаря.", createFirstCat: "Создать первый тип",
+                catExists: "Такая категория уже существует.", lastCat: "Нельзя удалить единственную категорию."
             }
         };
         let currentLang = localStorage.getItem('appLang') || 'en';
@@ -384,9 +466,19 @@ function doPost(e) {
         document.addEventListener('DOMContentLoaded', () => {
             setLang(currentLang); // Fix: Call setLang directly on load to init buttons and text
             setupLazyLoading();
-            fetchData();
+            bootstrap();
             manageAutoSync();
         });
+
+        async function bootstrap() {
+            await fetchCategories();
+            if (categories.length) {
+                if (!categories.includes(activeCategory)) activeCategory = categories[0];
+                await fetchData();
+            }
+            renderCategoryTabs();
+            renderCategoryManageList();
+        }
 
         searchInput.addEventListener('input', (e) => {
             displayLimit = limitStep; // Reset lazy load on new search
@@ -407,6 +499,8 @@ function doPost(e) {
             document.getElementById('langBtnRu').className = lang === 'ru' ? 'px-4 py-1.5 rounded-[6px] bg-[#6750A4] text-white font-medium text-[14px] transition-colors' : 'px-4 py-1.5 rounded-[6px] bg-transparent text-[#49454F] font-medium text-[14px] hover:bg-[#EADDFF] transition-colors';
             
             applyLanguage();
+            renderCategoryTabs();
+            renderCategoryManageList();
             renderList(searchInput.value);
         }
 
@@ -463,8 +557,23 @@ function doPost(e) {
             observer.observe(lazyLoadSentinel);
         }
 
+        function localKey() { return 'inventoryData::' + activeCategory; }
+
+        async function fetchCategories() {
+            try {
+                if (APPS_SCRIPT_URL) {
+                    const res = await fetch(`${APPS_SCRIPT_URL}?action=categories`);
+                    categories = await res.json() || [];
+                } else {
+                    categories = JSON.parse(localStorage.getItem('inventoryCategories') || '[]');
+                }
+            } catch (e) {
+                categories = JSON.parse(localStorage.getItem('inventoryCategories') || '[]');
+            }
+        }
+
         async function fetchData(silent = false) {
-            if (isSyncing) return;
+            if (isSyncing || !activeCategory) { if (!activeCategory) renderList(); return; }
             isSyncing = true;
             if (!silent) document.getElementById('loader').classList.remove('hidden');
             const syncIcon = document.querySelector('#syncBtn span');
@@ -472,10 +581,10 @@ function doPost(e) {
             
             try {
                 if (APPS_SCRIPT_URL) {
-                    const response = await fetch(`${APPS_SCRIPT_URL}?action=get`);
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=get&category=${encodeURIComponent(activeCategory)}`);
                     inventory = await response.json() || [];
                 } else {
-                    const localData = localStorage.getItem('inventoryData');
+                    const localData = localStorage.getItem(localKey());
                     inventory = localData ? JSON.parse(localData) : [];
                     if (!silent) await new Promise(r => setTimeout(r, 400)); 
                 }
@@ -490,6 +599,133 @@ function doPost(e) {
             }
         }
 
+        function renderCategoryTabs() {
+            const bar = document.getElementById('categoryTabs');
+            const chips = categories.map(c => {
+                const active = c === activeCategory;
+                const cls = active
+                    ? 'bg-[#6750A4] text-white'
+                    : 'bg-[#ECE6F0] text-[#49454F] hover:bg-[#E6E0E9]';
+                return `<button onclick="switchCategory('${escapeHTML(c).replace(/'/g, "\\'")}')" class="shrink-0 px-4 h-9 rounded-full text-[14px] font-medium whitespace-nowrap transition-colors ${cls}">${escapeHTML(c)}</button>`;
+            }).join('');
+            const addChip = `<button onclick="addCategory()" class="shrink-0 w-9 h-9 rounded-full bg-[#ECE6F0] text-[#6750A4] flex items-center justify-center hover:bg-[#E6E0E9] transition-colors" title="${i18n[currentLang].addCategory}"><span class="material-symbols-rounded text-[20px]">add</span></button>`;
+            bar.innerHTML = chips + addChip;
+            const label = document.getElementById('activeCategoryLabel');
+            label.textContent = activeCategory || i18n[currentLang].noCategories;
+        }
+
+        function renderCategoryManageList() {
+            const list = document.getElementById('categoryManageList');
+            if (!list) return;
+            if (!categories.length) {
+                list.innerHTML = `<p class="text-[14px] text-[#49454F]">${i18n[currentLang].noCategories}</p>`;
+                return;
+            }
+            list.innerHTML = categories.map(c => `
+                <div class="flex items-center justify-between bg-[#F3EDF7] rounded-[12px] px-4 py-2">
+                    <span class="text-[15px] text-[#1D192B] truncate pr-2">${escapeHTML(c)}</span>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button onclick="renameCategory('${escapeHTML(c).replace(/'/g, "\\'")}')" class="w-9 h-9 rounded-full text-[#6750A4] hover:bg-[#6750A4]/10 flex items-center justify-center" title="${i18n[currentLang].renameCat}">
+                            <span class="material-symbols-rounded text-[18px]">edit</span>
+                        </button>
+                        <button onclick="deleteCategory('${escapeHTML(c).replace(/'/g, "\\'")}')" class="w-9 h-9 rounded-full text-[#B3261E] hover:bg-[#F9DEDC] flex items-center justify-center" title="${i18n[currentLang].deleteCat}">
+                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function switchCategory(cat) {
+            if (cat === activeCategory) return;
+            activeCategory = cat;
+            localStorage.setItem('activeCategory', cat);
+            showLowOnly = false;
+            displayLimit = limitStep;
+            searchInput.value = '';
+            inventory = [];
+            renderCategoryTabs();
+            await fetchData();
+        }
+
+        function persistCategoriesLocal() {
+            localStorage.setItem('inventoryCategories', JSON.stringify(categories));
+        }
+
+        async function addCategory() {
+            const name = (prompt(i18n[currentLang].newCatPrompt) || '').trim();
+            if (!name) return;
+            if (categories.includes(name)) { showToast(i18n[currentLang].catExists, 'error'); return; }
+            document.getElementById('loader').classList.remove('hidden');
+            try {
+                if (APPS_SCRIPT_URL) {
+                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'addCategory', category: name }) });
+                }
+                categories.push(name);
+                persistCategoriesLocal();
+                await switchCategory(name);
+                renderCategoryManageList();
+                showToast(currentLang === 'en' ? 'Category added' : 'Категория добавлена');
+            } catch (e) { showToast('Error', 'error'); }
+            document.getElementById('loader').classList.add('hidden');
+        }
+
+        async function renameCategory(oldName) {
+            const newName = (prompt(i18n[currentLang].renameCatPrompt, oldName) || '').trim();
+            if (!newName || newName === oldName) return;
+            if (categories.includes(newName)) { showToast(i18n[currentLang].catExists, 'error'); return; }
+            document.getElementById('loader').classList.remove('hidden');
+            try {
+                if (APPS_SCRIPT_URL) {
+                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'renameCategory', category: oldName, newName: newName }) });
+                } else {
+                    const d = localStorage.getItem('inventoryData::' + oldName);
+                    if (d) localStorage.setItem('inventoryData::' + newName, d);
+                    localStorage.removeItem('inventoryData::' + oldName);
+                }
+                categories = categories.map(c => c === oldName ? newName : c);
+                persistCategoriesLocal();
+                if (activeCategory === oldName) { activeCategory = newName; localStorage.setItem('activeCategory', newName); }
+                renderCategoryTabs();
+                renderCategoryManageList();
+                await fetchData();
+            } catch (e) { showToast('Error', 'error'); }
+            document.getElementById('loader').classList.add('hidden');
+        }
+
+        async function deleteCategory(name) {
+            if (categories.length <= 1) { showToast(i18n[currentLang].lastCat, 'error'); return; }
+            if (!confirm(i18n[currentLang].confirmDeleteCat)) return;
+            document.getElementById('loader').classList.remove('hidden');
+            try {
+                if (APPS_SCRIPT_URL) {
+                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteCategory', category: name }) });
+                } else {
+                    localStorage.removeItem('inventoryData::' + name);
+                }
+                categories = categories.filter(c => c !== name);
+                persistCategoriesLocal();
+                if (activeCategory === name) {
+                    activeCategory = categories[0] || '';
+                    localStorage.setItem('activeCategory', activeCategory);
+                    inventory = [];
+                    await fetchData();
+                }
+                renderCategoryTabs();
+                renderCategoryManageList();
+                showToast(currentLang === 'en' ? 'Category deleted' : 'Категория удалена');
+            } catch (e) { showToast('Error', 'error'); }
+            document.getElementById('loader').classList.add('hidden');
+        }
+
+        function toggleLowOnly() {
+            showLowOnly = !showLowOnly;
+            const btn = document.getElementById('lowStockFilter');
+            btn.classList.toggle('ring-2', showLowOnly);
+            btn.classList.toggle('ring-[#B3261E]', showLowOnly);
+            displayLimit = limitStep;
+            renderList(searchInput.value);
+        }
+
         function manageAutoSync() {
             if (autoSyncInterval) clearInterval(autoSyncInterval);
             if (isAutoSyncEnabled) autoSyncInterval = setInterval(() => fetchData(true), 15000);
@@ -497,29 +733,31 @@ function doPost(e) {
 
         document.getElementById('addItemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!activeCategory) { showToast(i18n[currentLang].noCategories, 'error'); return; }
             const newItem = {
                 id: Date.now().toString(),
                 type: document.getElementById('itemType').value.trim(),
                 location: document.getElementById('itemLocation').value.trim(),
-                quantity: parseInt(document.getElementById('itemQuantity').value, 10)
+                quantity: parseInt(document.getElementById('itemQuantity').value, 10) || 0,
+                threshold: parseInt(document.getElementById('itemThreshold').value, 10) || 0
             };
             closeModal('addItemModal');
             document.getElementById('loader').classList.remove('hidden');
             
             try {
-                if (APPS_SCRIPT_URL) {
-                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', item: newItem }) });
-                } else {
-                    localStorage.setItem('inventoryData', JSON.stringify(inventory));
-                }
                 inventory.unshift(newItem);
+                if (APPS_SCRIPT_URL) {
+                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', category: activeCategory, item: newItem }) });
+                } else {
+                    localStorage.setItem(localKey(), JSON.stringify(inventory));
+                }
                 updateSuggestions();
                 renderList(searchInput.value);
                 showToast(currentLang==='en'?'Item added':'Добавлено');
             } catch(e) { showToast('Error', 'error'); }
             
             document.getElementById('loader').classList.add('hidden');
-            e.target.reset(); document.getElementById('itemQuantity').value = 1;
+            e.target.reset(); document.getElementById('itemQuantity').value = 1; document.getElementById('itemThreshold').value = 0;
         });
 
         // Edit Flow
@@ -529,6 +767,7 @@ function doPost(e) {
             document.getElementById('editItemId').value = id;
             document.getElementById('editItemType').value = item.type;
             document.getElementById('editItemLocation').value = item.location;
+            document.getElementById('editItemThreshold').value = item.threshold || 0;
             openModal('editItemModal');
         }
 
@@ -537,12 +776,14 @@ function doPost(e) {
             const id = document.getElementById('editItemId').value;
             const newType = document.getElementById('editItemType').value.trim();
             const newLoc = document.getElementById('editItemLocation').value.trim();
+            const newThreshold = parseInt(document.getElementById('editItemThreshold').value, 10) || 0;
             
             const index = inventory.findIndex(i => i.id === id);
             if(index === -1) return;
             
             inventory[index].type = newType;
             inventory[index].location = newLoc;
+            inventory[index].threshold = newThreshold;
             renderList(searchInput.value); // Optimistic
             closeModal('editItemModal');
 
@@ -550,9 +791,9 @@ function doPost(e) {
                 if (APPS_SCRIPT_URL) {
                     await fetch(APPS_SCRIPT_URL, { 
                         method: 'POST', 
-                        body: JSON.stringify({ action: 'edit', item: { id: id, type: newType, location: newLoc } }) 
+                        body: JSON.stringify({ action: 'edit', category: activeCategory, item: { id: id, type: newType, location: newLoc, threshold: newThreshold } }) 
                     });
-                } else { localStorage.setItem('inventoryData', JSON.stringify(inventory)); }
+                } else { localStorage.setItem(localKey(), JSON.stringify(inventory)); }
                 updateSuggestions();
             } catch(e) { showToast('Sync Error', 'error'); }
         });
@@ -575,15 +816,38 @@ function doPost(e) {
                     numSpan.classList.remove('flip-animate');
                 }, 150);
             }
+            refreshLowIndicator(id);
+            refreshLowStockPill();
 
             try {
                 if (APPS_SCRIPT_URL) {
-                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'update', id: id, quantity: newQty }) });
-                } else { localStorage.setItem('inventoryData', JSON.stringify(inventory)); }
+                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'update', category: activeCategory, id: id, quantity: newQty }) });
+                } else { localStorage.setItem(localKey(), JSON.stringify(inventory)); }
             } catch (error) {
                 inventory[index].quantity = oldQty; // Revert
                 if (numSpan) numSpan.textContent = oldQty;
+                refreshLowIndicator(id);
+                refreshLowStockPill();
                 showToast('Sync Error', 'error');
+            }
+        }
+
+        function isLow(item) { return item.threshold > 0 && item.quantity <= item.threshold; }
+
+        function refreshLowIndicator(id) {
+            const item = inventory.find(i => i.id === id);
+            const badge = document.getElementById(`low-${id}`);
+            if (item && badge) badge.classList.toggle('hidden', !isLow(item));
+        }
+
+        function refreshLowStockPill() {
+            const count = inventory.filter(isLow).length;
+            const pill = document.getElementById('lowStockFilter');
+            document.getElementById('lowStockCount').textContent = count;
+            if (count > 0) { pill.classList.remove('hidden'); pill.classList.add('flex'); }
+            else {
+                pill.classList.add('hidden'); pill.classList.remove('flex');
+                if (showLowOnly) { showLowOnly = false; pill.classList.remove('ring-2', 'ring-[#B3261E]'); renderList(searchInput.value); }
             }
         }
 
@@ -597,8 +861,8 @@ function doPost(e) {
 
             try {
                 if (APPS_SCRIPT_URL) {
-                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
-                } else { localStorage.setItem('inventoryData', JSON.stringify(inventory)); }
+                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', category: activeCategory, id: id }) });
+                } else { localStorage.setItem(localKey(), JSON.stringify(inventory)); }
                 updateSuggestions();
             } catch (error) {
                 inventory.splice(index, 0, itemToDelete);
@@ -614,26 +878,51 @@ function doPost(e) {
         }
 
         function renderList(filterText = "", fullReplace = true) {
-            const filtered = inventory.filter(item => 
+            document.getElementById('activeCategoryLabel').textContent = activeCategory || i18n[currentLang].noCategories;
+
+            // No categories yet -> invite to create one
+            if (!activeCategory) {
+                listEl.innerHTML = '';
+                document.getElementById('totalItems').textContent = '0';
+                document.getElementById('lowStockFilter').classList.add('hidden');
+                lazyLoadSentinel.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.innerHTML = `
+                    <span class="material-symbols-rounded text-6xl opacity-40 mb-2">category</span>
+                    <p class="text-[16px] mb-4">${i18n[currentLang].noCategories}</p>
+                    <button onclick="addCategory()" class="px-6 py-2.5 rounded-full bg-[#6750A4] text-white font-medium">${i18n[currentLang].createFirstCat}</button>`;
+                return;
+            }
+
+            let filtered = inventory.filter(item => 
                 item.type.toLowerCase().includes(filterText.toLowerCase()) || 
                 item.location.toLowerCase().includes(filterText.toLowerCase())
             );
+            if (showLowOnly) filtered = filtered.filter(isLow);
 
+            refreshLowStockPill();
             document.getElementById('totalItems').textContent = `${filtered.length}`;
+
             if (filtered.length === 0) {
                 listEl.innerHTML = ''; emptyState.classList.remove('hidden'); lazyLoadSentinel.classList.add('hidden');
+                emptyState.innerHTML = `
+                    <span class="material-symbols-rounded text-6xl opacity-40 mb-2">inventory_2</span>
+                    <p class="text-[16px]">${i18n[currentLang].noItems}</p>`;
                 return;
             }
             emptyState.classList.add('hidden');
 
-            // Render up to displayLimit
             const itemsToRender = filtered.slice(0, displayLimit);
             
-            // Generate HTML
             const html = itemsToRender.map(item => `
                 <div class="bg-[#F3EDF7] rounded-2xl p-4 flex justify-between items-center transition-all group">
                     <div class="flex-1 pr-3 min-w-0" onclick="openEditModal('${item.id}')" style="cursor:pointer">
-                        <h3 class="font-medium text-[16px] text-[#1D192B] truncate group-hover:text-[#6750A4] transition-colors">${escapeHTML(item.type)}</h3>
+                        <div class="flex items-center gap-2 min-w-0">
+                            <h3 class="font-medium text-[16px] text-[#1D192B] truncate group-hover:text-[#6750A4] transition-colors">${escapeHTML(item.type)}</h3>
+                            <span id="low-${item.id}" class="${isLow(item) ? '' : 'hidden'} shrink-0 inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-[#FFDAD6] text-[#410002] text-[11px] font-medium">
+                                <span class="material-symbols-rounded text-[13px]">warning</span>${i18n[currentLang].low}
+                            </span>
+                        </div>
                         <p class="text-[13px] text-[#49454F] flex items-center gap-1 mt-0.5 truncate">
                             <span class="material-symbols-rounded text-[14px] icon-outlined">location_on</span>
                             ${escapeHTML(item.location)}
@@ -658,15 +947,8 @@ function doPost(e) {
                 </div>
             `).join('');
 
-            if (fullReplace) {
-                listEl.innerHTML = html;
-            } else {
-                // If just appending for lazy load, we can replace completely because DOM diffing is fast enough in this use case,
-                // but to avoid scroll jumping, we inject directly.
-                listEl.innerHTML = html; 
-            }
+            listEl.innerHTML = html;
 
-            // Sentinel logic
             if(itemsToRender.length < filtered.length) {
                 lazyLoadSentinel.classList.remove('hidden');
             } else {

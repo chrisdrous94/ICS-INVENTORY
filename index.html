@@ -77,7 +77,7 @@
             <button onclick="openModal('auditModal')" class="w-10 h-10 rounded-full flex items-center justify-center text-[#49454F] hover:bg-[#1D192B]/10 active:bg-[#1D192B]/20 transition-colors" title="Audit Mode">
                 <span class="material-symbols-rounded">fact_check</span>
             </button>
-            <button onclick="fetchData()" class="w-10 h-10 rounded-full flex items-center justify-center text-[#49454F] hover:bg-[#1D192B]/10 active:bg-[#1D192B]/20 transition-colors" id="syncBtn">
+            <button onclick="syncAll()" class="w-10 h-10 rounded-full flex items-center justify-center text-[#49454F] hover:bg-[#1D192B]/10 active:bg-[#1D192B]/20 transition-colors" id="syncBtn">
                 <span class="material-symbols-rounded">sync</span>
             </button>
             <button onclick="openModal('settingsModal')" class="w-10 h-10 rounded-full flex items-center justify-center text-[#49454F] hover:bg-[#1D192B]/10 active:bg-[#1D192B]/20 transition-colors">
@@ -93,6 +93,16 @@
                 <input type="text" id="searchInput" placeholder="Search items or locations" 
                        class="flex-1 bg-transparent border-none outline-none text-[#1D192B] placeholder-[#49454F] text-[16px]" data-i18n-ph="searchPh">
             </div>
+        </div>
+
+        <!-- Backend version warning -->
+        <div id="backendBanner" class="hidden mx-4 mt-2 rounded-[12px] bg-[#FFDAD6] text-[#410002] p-4 items-start gap-3">
+            <span class="material-symbols-rounded shrink-0 mt-0.5">warning</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-[14px] font-medium" data-i18n="backendOutdatedTitle">Backend update required</p>
+                <p class="text-[13px] mt-0.5 leading-snug" data-i18n="backendOutdatedDesc">The connected Apps Script is an older version. Open Settings, copy the new setup code into your script, and redeploy as a new version.</p>
+            </div>
+            <button onclick="openModal('settingsModal')" class="shrink-0 px-3 py-1.5 rounded-full bg-[#410002] text-[#FFDAD6] text-[13px] font-medium active:scale-95 transition-all" data-i18n="openSettings">Open Settings</button>
         </div>
 
         <!-- Category Tabs -->
@@ -231,6 +241,46 @@
         </div>
     </div>
 
+    <!-- Category Add/Rename Modal -->
+    <div id="categoryModal" class="fixed inset-0 z-50 hidden">
+        <div class="dialog-backdrop absolute inset-0 bg-black/40 opacity-0" onclick="closeModal('categoryModal')"></div>
+        <div class="dialog-panel absolute bottom-0 left-0 right-0 bg-[#FEF7FF] rounded-t-3xl sm:rounded-3xl sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-md w-full p-6 translate-y-full sm:translate-y-10 opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="categoryModalTitle" class="text-[24px] font-normal text-[#1D192B]">Add category</h2>
+                <button onclick="closeModal('categoryModal')" class="w-10 h-10 rounded-full hover:bg-[#1D192B]/10 flex items-center justify-center text-[#49454F]">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form id="categoryForm" class="space-y-5">
+                <div class="relative">
+                    <input type="text" id="categoryNameInput" required maxlength="60" placeholder=" " class="peer w-full h-14 px-4 bg-transparent border border-[#79747E] rounded-[4px] outline-none focus:border-2 focus:border-[#6750A4] text-[#1D192B]">
+                    <label class="absolute left-3 top-[-8px] bg-[#FEF7FF] px-1 text-[12px] text-[#6750A4] peer-placeholder-shown:text-[#49454F] peer-placeholder-shown:text-[16px] peer-placeholder-shown:top-4 peer-focus:top-[-8px] peer-focus:text-[12px] peer-focus:text-[#6750A4] transition-all pointer-events-none" data-i18n="categoryName">Category name</label>
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeModal('categoryModal')" class="px-6 py-2.5 rounded-full text-[#6750A4] font-medium hover:bg-[#6750A4]/10 transition-colors" data-i18n="cancel">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-full bg-[#6750A4] text-white font-medium hover:bg-[#523f85] transition-colors" data-i18n="save">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Dialog -->
+    <div id="confirmModal" class="fixed inset-0 z-[55] hidden">
+        <div class="dialog-backdrop absolute inset-0 bg-black/40 opacity-0" onclick="resolveConfirm(false)"></div>
+        <div class="dialog-panel absolute bottom-0 left-0 right-0 bg-[#FEF7FF] rounded-t-3xl sm:rounded-3xl sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-sm w-full p-6 translate-y-full sm:translate-y-10 opacity-0">
+            <div class="flex items-start gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-[#F9DEDC] text-[#B3261E] flex items-center justify-center shrink-0">
+                    <span class="material-symbols-rounded">delete</span>
+                </div>
+                <p id="confirmMessage" class="text-[16px] text-[#1D192B] leading-snug pt-2"></p>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="resolveConfirm(false)" class="px-6 py-2.5 rounded-full text-[#6750A4] font-medium hover:bg-[#6750A4]/10 transition-colors" data-i18n="cancel">Cancel</button>
+                <button type="button" id="confirmActionBtn" onclick="resolveConfirm(true)" class="px-6 py-2.5 rounded-full bg-[#B3261E] text-white font-medium hover:bg-[#8c1d17] transition-colors" data-i18n="deleteAction">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 z-50 hidden flex flex-col">
         <div class="dialog-backdrop absolute inset-0 bg-black/40 opacity-0" onclick="closeModal('settingsModal')"></div>
@@ -260,7 +310,7 @@
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="text-[14px] font-medium text-[#6750A4]" data-i18n="manageCategories">Manage Categories</h3>
-                        <button onclick="addCategory()" class="flex items-center gap-1 px-3 py-1 rounded-full text-[#6750A4] font-medium hover:bg-[#6750A4]/10 transition-colors">
+                        <button onclick="openCategoryModal('add')" class="flex items-center gap-1 px-3 py-1 rounded-full text-[#6750A4] font-medium hover:bg-[#6750A4]/10 transition-colors">
                             <span class="material-symbols-rounded text-[18px]">add</span> <span data-i18n="addCategory">Add category</span>
                         </button>
                     </div>
@@ -436,7 +486,12 @@ function doPost(e) {
                 renameCatPrompt: "New name for this category:",
                 confirmDeleteCat: "Delete this category and all its items? This cannot be undone.",
                 noCategories: "No inventory types yet.", createFirstCat: "Create your first type",
-                catExists: "That category already exists.", lastCat: "You can't delete the only category."
+                catExists: "That category already exists.", lastCat: "You can't delete the only category.",
+                categoryName: "Category name", backendOutdatedTitle: "Backend update required",
+                backendOutdatedDesc: "The connected Apps Script is an older version. Open Settings, copy the new setup code into your script, and redeploy as a new version.",
+                openSettings: "Open Settings", confirmDeleteItem: "Delete \"{name}\"? This cannot be undone.",
+                deleteAction: "Delete", catAdded: "Category added", catDeleted: "Category deleted",
+                catRenamed: "Category renamed", itemDeleted: "Item deleted", connectionFailed: "Connection failed"
             },
             ru: {
                 title: "Инвентарь", currentStock: "Текущий запас", noItems: "Товары не найдены.",
@@ -451,7 +506,12 @@ function doPost(e) {
                 renameCatPrompt: "Новое название категории:",
                 confirmDeleteCat: "Удалить категорию и все её товары? Это нельзя отменить.",
                 noCategories: "Пока нет типов инвентаря.", createFirstCat: "Создать первый тип",
-                catExists: "Такая категория уже существует.", lastCat: "Нельзя удалить единственную категорию."
+                catExists: "Такая категория уже существует.", lastCat: "Нельзя удалить единственную категорию.",
+                categoryName: "Название категории", backendOutdatedTitle: "Требуется обновление скрипта",
+                backendOutdatedDesc: "Подключён устаревший Apps Script. Откройте настройки, скопируйте новый код в скрипт и разверните новую версию.",
+                openSettings: "Настройки", confirmDeleteItem: "Удалить «{name}»? Это нельзя отменить.",
+                deleteAction: "Удалить", catAdded: "Категория добавлена", catDeleted: "Категория удалена",
+                catRenamed: "Категория переименована", itemDeleted: "Товар удалён", connectionFailed: "Ошибка соединения"
             }
         };
         let currentLang = localStorage.getItem('appLang') || 'en';
@@ -472,12 +532,11 @@ function doPost(e) {
 
         async function bootstrap() {
             await fetchCategories();
-            if (categories.length) {
-                if (!categories.includes(activeCategory)) activeCategory = categories[0];
-                await fetchData();
-            }
             renderCategoryTabs();
             renderCategoryManageList();
+            setupCategoryDelegation();
+            if (activeCategory) await fetchData();
+            else renderList();
         }
 
         searchInput.addEventListener('input', (e) => {
@@ -558,18 +617,50 @@ function doPost(e) {
         }
 
         function localKey() { return 'inventoryData::' + activeCategory; }
+        const t = (key) => (i18n[currentLang] && i18n[currentLang][key]) || key;
+
+        let backendOutdated = false;
+
+        function setBackendBanner(show) {
+            const b = document.getElementById('backendBanner');
+            b.classList.toggle('hidden', !show);
+            b.classList.toggle('flex', show);
+        }
 
         async function fetchCategories() {
+            backendOutdated = false;
             try {
                 if (APPS_SCRIPT_URL) {
                     const res = await fetch(`${APPS_SCRIPT_URL}?action=categories`);
-                    categories = await res.json() || [];
+                    const raw = await res.json();
+                    if (Array.isArray(raw) && raw.every(x => typeof x === 'string')) {
+                        categories = raw.map(s => s.trim()).filter(Boolean);
+                    } else {
+                        // The deployed script doesn't understand ?action=categories
+                        // (an old version replies with inventory rows instead).
+                        categories = [];
+                        backendOutdated = Array.isArray(raw) && raw.length > 0 && typeof raw[0] === 'object';
+                    }
                 } else {
-                    categories = JSON.parse(localStorage.getItem('inventoryCategories') || '[]');
+                    categories = (JSON.parse(localStorage.getItem('inventoryCategories') || '[]'))
+                        .filter(x => typeof x === 'string');
                 }
             } catch (e) {
-                categories = JSON.parse(localStorage.getItem('inventoryCategories') || '[]');
+                categories = (JSON.parse(localStorage.getItem('inventoryCategories') || '[]'))
+                    .filter(x => typeof x === 'string');
             }
+            if (typeof activeCategory !== 'string' || !categories.includes(activeCategory)) {
+                activeCategory = categories[0] || '';
+                localStorage.setItem('activeCategory', activeCategory);
+            }
+            setBackendBanner(backendOutdated);
+        }
+
+        async function syncAll() {
+            await fetchCategories();
+            renderCategoryTabs();
+            renderCategoryManageList();
+            await fetchData();
         }
 
         async function fetchData(silent = false) {
@@ -582,7 +673,16 @@ function doPost(e) {
             try {
                 if (APPS_SCRIPT_URL) {
                     const response = await fetch(`${APPS_SCRIPT_URL}?action=get&category=${encodeURIComponent(activeCategory)}`);
-                    inventory = await response.json() || [];
+                    const raw = await response.json();
+                    inventory = (Array.isArray(raw) ? raw : [])
+                        .filter(x => x && typeof x === 'object' && x.id != null)
+                        .map(x => ({
+                            id: String(x.id),
+                            type: String(x.type || ''),
+                            location: String(x.location || ''),
+                            quantity: parseInt(x.quantity, 10) || 0,
+                            threshold: parseInt(x.threshold, 10) || 0
+                        }));
                 } else {
                     const localData = localStorage.getItem(localKey());
                     inventory = localData ? JSON.parse(localData) : [];
@@ -604,35 +704,49 @@ function doPost(e) {
             const chips = categories.map(c => {
                 const active = c === activeCategory;
                 const cls = active
-                    ? 'bg-[#6750A4] text-white'
+                    ? 'bg-[#6750A4] text-white shadow-sm'
                     : 'bg-[#ECE6F0] text-[#49454F] hover:bg-[#E6E0E9]';
-                return `<button onclick="switchCategory('${escapeHTML(c).replace(/'/g, "\\'")}')" class="shrink-0 px-4 h-9 rounded-full text-[14px] font-medium whitespace-nowrap transition-colors ${cls}">${escapeHTML(c)}</button>`;
+                return `<button type="button" data-cat="${escapeHTML(c)}" class="shrink-0 px-4 h-9 rounded-full text-[14px] font-medium whitespace-nowrap transition-colors ${cls}">${escapeHTML(c)}</button>`;
             }).join('');
-            const addChip = `<button onclick="addCategory()" class="shrink-0 w-9 h-9 rounded-full bg-[#ECE6F0] text-[#6750A4] flex items-center justify-center hover:bg-[#E6E0E9] transition-colors" title="${i18n[currentLang].addCategory}"><span class="material-symbols-rounded text-[20px]">add</span></button>`;
+            const addChip = `<button type="button" data-role="add-category" class="shrink-0 w-9 h-9 rounded-full bg-[#ECE6F0] text-[#6750A4] flex items-center justify-center hover:bg-[#E6E0E9] transition-colors" title="${escapeHTML(t('addCategory'))}"><span class="material-symbols-rounded text-[20px] pointer-events-none">add</span></button>`;
             bar.innerHTML = chips + addChip;
-            const label = document.getElementById('activeCategoryLabel');
-            label.textContent = activeCategory || i18n[currentLang].noCategories;
+            document.getElementById('activeCategoryLabel').textContent = activeCategory || t('noCategories');
         }
 
         function renderCategoryManageList() {
             const list = document.getElementById('categoryManageList');
             if (!list) return;
             if (!categories.length) {
-                list.innerHTML = `<p class="text-[14px] text-[#49454F]">${i18n[currentLang].noCategories}</p>`;
+                list.innerHTML = `<p class="text-[14px] text-[#49454F]">${escapeHTML(t('noCategories'))}</p>`;
                 return;
             }
             list.innerHTML = categories.map(c => `
                 <div class="flex items-center justify-between bg-[#F3EDF7] rounded-[12px] px-4 py-2">
                     <span class="text-[15px] text-[#1D192B] truncate pr-2">${escapeHTML(c)}</span>
                     <div class="flex items-center gap-1 shrink-0">
-                        <button onclick="renameCategory('${escapeHTML(c).replace(/'/g, "\\'")}')" class="w-9 h-9 rounded-full text-[#6750A4] hover:bg-[#6750A4]/10 flex items-center justify-center" title="${i18n[currentLang].renameCat}">
-                            <span class="material-symbols-rounded text-[18px]">edit</span>
+                        <button type="button" data-cat="${escapeHTML(c)}" data-role="rename" class="w-9 h-9 rounded-full text-[#6750A4] hover:bg-[#6750A4]/10 flex items-center justify-center" title="${escapeHTML(t('renameCat'))}">
+                            <span class="material-symbols-rounded text-[18px] pointer-events-none">edit</span>
                         </button>
-                        <button onclick="deleteCategory('${escapeHTML(c).replace(/'/g, "\\'")}')" class="w-9 h-9 rounded-full text-[#B3261E] hover:bg-[#F9DEDC] flex items-center justify-center" title="${i18n[currentLang].deleteCat}">
-                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                        <button type="button" data-cat="${escapeHTML(c)}" data-role="delete" class="w-9 h-9 rounded-full text-[#B3261E] hover:bg-[#F9DEDC] flex items-center justify-center" title="${escapeHTML(t('deleteCat'))}">
+                            <span class="material-symbols-rounded text-[18px] pointer-events-none">delete</span>
                         </button>
                     </div>
                 </div>`).join('');
+        }
+
+        function setupCategoryDelegation() {
+            document.getElementById('categoryTabs').addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                if (btn.dataset.role === 'add-category') { openCategoryModal('add'); return; }
+                if (btn.dataset.cat !== undefined) switchCategory(btn.dataset.cat);
+            });
+            document.getElementById('categoryManageList').addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn || btn.dataset.cat === undefined) return;
+                if (btn.dataset.role === 'rename') openCategoryModal('rename', btn.dataset.cat);
+                else if (btn.dataset.role === 'delete') deleteCategory(btn.dataset.cat);
+            });
         }
 
         async function switchCategory(cat) {
@@ -640,6 +754,7 @@ function doPost(e) {
             activeCategory = cat;
             localStorage.setItem('activeCategory', cat);
             showLowOnly = false;
+            document.getElementById('lowStockFilter').classList.remove('ring-2', 'ring-[#B3261E]');
             displayLimit = limitStep;
             searchInput.value = '';
             inventory = [];
@@ -651,10 +766,45 @@ function doPost(e) {
             localStorage.setItem('inventoryCategories', JSON.stringify(categories));
         }
 
-        async function addCategory() {
-            const name = (prompt(i18n[currentLang].newCatPrompt) || '').trim();
+        // --- Category modal (add / rename) ---
+        let categoryModalMode = 'add';
+        let categoryModalTarget = '';
+
+        function openCategoryModal(mode, target = '') {
+            categoryModalMode = mode;
+            categoryModalTarget = target;
+            document.getElementById('categoryModalTitle').textContent = mode === 'add' ? t('addCategory') : t('renameCat');
+            const input = document.getElementById('categoryNameInput');
+            input.value = mode === 'rename' ? target : '';
+            openModal('categoryModal');
+            setTimeout(() => input.focus(), 300);
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('categoryNameInput').value.trim();
             if (!name) return;
-            if (categories.includes(name)) { showToast(i18n[currentLang].catExists, 'error'); return; }
+            if (name.charAt(0) === '_') { showToast(t('catExists'), 'error'); return; }
+            if (categories.includes(name) && name !== categoryModalTarget) { showToast(t('catExists'), 'error'); return; }
+            closeModal('categoryModal');
+            if (categoryModalMode === 'add') await doAddCategory(name);
+            else if (name !== categoryModalTarget) await doRenameCategory(categoryModalTarget, name);
+        });
+
+        // --- Confirm dialog helper ---
+        let confirmResolve = null;
+        function askConfirm(message, actionLabel) {
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmActionBtn').textContent = actionLabel || t('deleteAction');
+            openModal('confirmModal');
+            return new Promise(res => { confirmResolve = res; });
+        }
+        function resolveConfirm(value) {
+            closeModal('confirmModal');
+            if (confirmResolve) { confirmResolve(value); confirmResolve = null; }
+        }
+
+        async function doAddCategory(name) {
             document.getElementById('loader').classList.remove('hidden');
             try {
                 if (APPS_SCRIPT_URL) {
@@ -662,17 +812,14 @@ function doPost(e) {
                 }
                 categories.push(name);
                 persistCategoriesLocal();
-                await switchCategory(name);
                 renderCategoryManageList();
-                showToast(currentLang === 'en' ? 'Category added' : 'Категория добавлена');
-            } catch (e) { showToast('Error', 'error'); }
+                await switchCategory(name);
+                showToast(t('catAdded'));
+            } catch (e) { showToast(t('connectionFailed'), 'error'); }
             document.getElementById('loader').classList.add('hidden');
         }
 
-        async function renameCategory(oldName) {
-            const newName = (prompt(i18n[currentLang].renameCatPrompt, oldName) || '').trim();
-            if (!newName || newName === oldName) return;
-            if (categories.includes(newName)) { showToast(i18n[currentLang].catExists, 'error'); return; }
+        async function doRenameCategory(oldName, newName) {
             document.getElementById('loader').classList.remove('hidden');
             try {
                 if (APPS_SCRIPT_URL) {
@@ -688,13 +835,15 @@ function doPost(e) {
                 renderCategoryTabs();
                 renderCategoryManageList();
                 await fetchData();
-            } catch (e) { showToast('Error', 'error'); }
+                showToast(t('catRenamed'));
+            } catch (e) { showToast(t('connectionFailed'), 'error'); }
             document.getElementById('loader').classList.add('hidden');
         }
 
         async function deleteCategory(name) {
-            if (categories.length <= 1) { showToast(i18n[currentLang].lastCat, 'error'); return; }
-            if (!confirm(i18n[currentLang].confirmDeleteCat)) return;
+            if (categories.length <= 1) { showToast(t('lastCat'), 'error'); return; }
+            const ok = await askConfirm(t('confirmDeleteCat'), t('deleteAction'));
+            if (!ok) return;
             document.getElementById('loader').classList.remove('hidden');
             try {
                 if (APPS_SCRIPT_URL) {
@@ -712,8 +861,8 @@ function doPost(e) {
                 }
                 renderCategoryTabs();
                 renderCategoryManageList();
-                showToast(currentLang === 'en' ? 'Category deleted' : 'Категория удалена');
-            } catch (e) { showToast('Error', 'error'); }
+                showToast(t('catDeleted'));
+            } catch (e) { showToast(t('connectionFailed'), 'error'); }
             document.getElementById('loader').classList.add('hidden');
         }
 
@@ -855,7 +1004,10 @@ function doPost(e) {
             const index = inventory.findIndex(i => i.id === id);
             if (index === -1) return;
             const itemToDelete = inventory[index];
-            
+
+            const ok = await askConfirm(t('confirmDeleteItem').replace('{name}', itemToDelete.type), t('deleteAction'));
+            if (!ok) return;
+
             inventory.splice(index, 1);
             renderList(searchInput.value);
 
@@ -864,9 +1016,11 @@ function doPost(e) {
                     await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', category: activeCategory, id: id }) });
                 } else { localStorage.setItem(localKey(), JSON.stringify(inventory)); }
                 updateSuggestions();
+                showToast(t('itemDeleted'));
             } catch (error) {
                 inventory.splice(index, 0, itemToDelete);
                 renderList(searchInput.value);
+                showToast(t('connectionFailed'), 'error');
             }
         }
 
@@ -878,7 +1032,7 @@ function doPost(e) {
         }
 
         function renderList(filterText = "", fullReplace = true) {
-            document.getElementById('activeCategoryLabel').textContent = activeCategory || i18n[currentLang].noCategories;
+            document.getElementById('activeCategoryLabel').textContent = activeCategory || t('noCategories');
 
             // No categories yet -> invite to create one
             if (!activeCategory) {
@@ -889,8 +1043,8 @@ function doPost(e) {
                 emptyState.classList.remove('hidden');
                 emptyState.innerHTML = `
                     <span class="material-symbols-rounded text-6xl opacity-40 mb-2">category</span>
-                    <p class="text-[16px] mb-4">${i18n[currentLang].noCategories}</p>
-                    <button onclick="addCategory()" class="px-6 py-2.5 rounded-full bg-[#6750A4] text-white font-medium">${i18n[currentLang].createFirstCat}</button>`;
+                    <p class="text-[16px] mb-4">${escapeHTML(t('noCategories'))}</p>
+                    <button onclick="openCategoryModal('add')" class="px-6 py-2.5 rounded-full bg-[#6750A4] text-white font-medium">${escapeHTML(t('createFirstCat'))}</button>`;
                 return;
             }
 
@@ -1029,7 +1183,7 @@ function doPost(e) {
         }
 
         function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+            return String(str ?? '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
         function copyAppsScript() {
